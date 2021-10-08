@@ -85,7 +85,6 @@ class sudoku {
             }
             cout << endl;
         }
-        cout << endl;
     }
 
     void print_line() const {
