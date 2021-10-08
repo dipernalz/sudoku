@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-    SudokuSolver solver("29_46_15784172__39___13_8__6____1______2___96_89___2_5___9__5__93_8_7____16__2_7_");
+    SudokuSolver solver("8__________36______7__9_2___5___7_______457_____1___3___1____68__85___1__9____4__");
     Sudoku solution = solver.solve();
     solution.print();
 
