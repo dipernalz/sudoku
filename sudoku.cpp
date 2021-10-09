@@ -7,19 +7,15 @@
 
 #include "sudoku_solver.h"
 
+/* private */
 sudoku::sudoku(const std::string& puzzle,
-               const std::unordered_map<int, std::unordered_set<char>>* const possible_symbols) {
+               const possible_symbol_map* const possible_symbols) {
+    exception_check(puzzle);
     this->puzzle = puzzle;
     this->possible_symbols = *possible_symbols;
 }
 
-sudoku::sudoku() {
-    this->puzzle = "";
-};
-
-sudoku::sudoku(const std::string& puzzle) {
-    this->puzzle = puzzle;
-
+void sudoku::generate_possible_symbols() {
     for (int i = 0; i < N * N; i++) {
         if (puzzle[i] == '_') {
             possible_symbols[i];
@@ -39,36 +35,65 @@ sudoku::sudoku(const std::string& puzzle) {
     }
 }
 
-const std::string& sudoku::get_puzzle() const {
-    return puzzle;
+void sudoku::exception_check(const std::string& puzzle) const {
+    if (sudoku_solver::get_constraints().size() == 0 ||
+        sudoku_solver::get_neighbors().size() == 0 ||
+        sudoku_solver::get_symbols().size() == 0) {
+        throw std::logic_error("no instance of sudoku_solver has been initialized");
+    }
+    if (puzzle.size() != N * N) {
+        throw std::invalid_argument("puzzle size is invalid");
+    }
 }
 
-const std::unordered_map<int, std::unordered_set<char>>& sudoku::get_possible_symbols() const {
-    return this->possible_symbols;
+/* public */
+sudoku::sudoku(){};
+
+sudoku::sudoku(const std::string& puzzle) {
+    exception_check(puzzle);
+    this->puzzle = puzzle;
+    generate_possible_symbols();
 }
 
-sudoku sudoku::replace(const int& index, const char& symbol) const {
+bool sudoku::is_valid() const {
+    return puzzle.size() == N * N;
+}
+
+bool sudoku::is_solved() const {
+    return is_valid() && possible_symbols.size() == 0;
+}
+
+sudoku sudoku::replace(const int& i, const char& symbol) const {
     std::string new_puzzle = puzzle;
-    new_puzzle[index] = symbol;
-    std::unordered_map<int, std::unordered_set<char>> new_possible_symbols;
+    new_puzzle[i] = symbol;
+    possible_symbol_map new_possible_symbols;
     for (const auto& pair : possible_symbols) {
-        const int& pos = pair.first;
-        if (index == pos) {
+        const int& j = pair.first;
+        if (i == j) {
             continue;
         }
-        new_possible_symbols[pos] = pair.second;
-        if (sudoku_solver::get_neighbors()[index].count(pos) == 1) {
-            new_possible_symbols[pos].erase(symbol);
+        new_possible_symbols[j] = pair.second;
+        if (sudoku_solver::get_neighbors()[i].count(j) == 1) {
+            new_possible_symbols[j].erase(symbol);
         }
-        if (new_possible_symbols[pos].size() == 0) {
-            return sudoku();
+        if (new_possible_symbols[j].size() == 0) {
+            static const sudoku empty_puzzle;
+            return empty_puzzle;
         }
     }
     return sudoku(new_puzzle, &new_possible_symbols);
 }
 
+const std::string& sudoku::get_puzzle() const {
+    return puzzle;
+}
+
+const possible_symbol_map& sudoku::get_possible_symbols() const {
+    return possible_symbols;
+}
+
 void sudoku::print_grid() const {
-    if (puzzle.size() == 0) {
+    if (!is_valid()) {
         return;
     }
     for (int i = 0; i < N; i++) {
@@ -83,7 +108,7 @@ void sudoku::print_grid() const {
 }
 
 void sudoku::print_line() const {
-    if (puzzle.size() == 0) {
+    if (!is_valid()) {
         return;
     }
     std::cout << puzzle << std::endl;
