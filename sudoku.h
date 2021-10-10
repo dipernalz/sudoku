@@ -14,7 +14,7 @@ class sudoku {
     possible_symbol_map possible_symbols;
 
     sudoku(const std::string& puzzle,
-           const possible_symbol_map* const possible_symbols);
+           const possible_symbol_map& possible_symbols);
 
     void generate_possible_symbols();
 

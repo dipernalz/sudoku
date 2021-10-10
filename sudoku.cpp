@@ -9,10 +9,10 @@
 
 /* private */
 sudoku::sudoku(const std::string& puzzle,
-               const possible_symbol_map* const possible_symbols) {
+               const possible_symbol_map& possible_symbols) {
     exception_check(puzzle);
     this->puzzle = puzzle;
-    this->possible_symbols = *possible_symbols;
+    this->possible_symbols = possible_symbols;
 }
 
 void sudoku::generate_possible_symbols() {
@@ -81,7 +81,7 @@ sudoku sudoku::replace(const int& i, const char& symbol) const {
             return empty_puzzle;
         }
     }
-    return sudoku(new_puzzle, &new_possible_symbols);
+    return sudoku(new_puzzle, new_possible_symbols);
 }
 
 const std::string& sudoku::get_puzzle() const {
