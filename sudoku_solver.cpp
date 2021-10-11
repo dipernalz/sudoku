@@ -75,15 +75,15 @@ sudoku sudoku_solver::solve_sudoku(sudoku puzzle) const {
             min_possible_n = symbols.size();
             min_possible_i = i;
             min_possible_symbols_ptr = &symbols;
-        }
-        if (min_possible_n == 1) {
-            break;
+            if (min_possible_n == 1) {
+                break;
+            }
         }
     }
 
     for (const char& symbol : *min_possible_symbols_ptr) {
         sudoku result = solve_sudoku(puzzle.replace(min_possible_i, symbol));
-        if (result.get_puzzle().size() != 0) {
+        if (result.is_solved()) {
             return result;
         }
     }

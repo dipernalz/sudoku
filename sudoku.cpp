@@ -75,10 +75,10 @@ sudoku sudoku::replace(const int& i, const char& symbol) const {
         new_possible_symbols[j] = pair.second;
         if (sudoku_solver::get_neighbors()[i].count(j) == 1) {
             new_possible_symbols[j].erase(symbol);
-        }
-        if (new_possible_symbols[j].size() == 0) {
-            static const sudoku empty_puzzle;
-            return empty_puzzle;
+            if (new_possible_symbols[j].size() == 0) {
+                static const sudoku empty_puzzle;
+                return empty_puzzle;
+            }
         }
     }
     return sudoku(new_puzzle, new_possible_symbols);
