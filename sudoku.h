@@ -2,46 +2,40 @@
 #define SUDOKU_H
 
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
-using possible_symbol_map = std::unordered_map<int, std::unordered_set<char>>;
+#include "bit_operations.h"
+
+using uint128_t = __uint128_t;
 
 class sudoku {
    private:
-    std::string puzzle;
-    possible_symbol_map possible_symbols;
+    uint128_t puzzle[N] = {0};
+    uint16_t possible_symbols[N * N] = {0};
+    unsigned char* index_to_symbol = NULL;
+    uint128_t* neighbors = NULL;
+    uint128_t spaces = ~0;
 
-    sudoku(const std::string& puzzle,
-           const possible_symbol_map& possible_symbols);
-
-    void generate_possible_symbols();
-
-    void exception_check(const std::string& puzzle) const;
+    sudoku(uint128_t* const puzzle, uint16_t* const possible_symbols,
+           const uint128_t& spaces, unsigned char* const index_to_symbol,
+           uint128_t* const neighbors);
 
    public:
-    enum { N = 9,
-           WIDTH = 3,
-           HEIGHT = 3 };
-
     sudoku();
 
-    sudoku(const std::string& puzzle);
+    sudoku(const std::string puzzle, uint8_t* symbol_to_index,
+           unsigned char* index_to_symbol, uint128_t* neighbors);
 
-    bool is_valid() const;
+    sudoku replace(const uint8_t& index, const uint8_t& symbol);
 
-    bool is_solved() const;
+    bool is_solved();
 
-    sudoku replace(const int& index, const char& symbol) const;
+    bool is_valid();
 
-    const std::string& get_puzzle() const;
+    uint16_t* get_possible_symbols();
 
-    const possible_symbol_map& get_possible_symbols() const;
+    void print();
 
-    void print_grid() const;
-
-    void print_line() const;
+    void print_grid();
 };
 
 #endif

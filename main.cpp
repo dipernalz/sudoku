@@ -3,9 +3,24 @@
 #include <iostream>
 
 #include "sudoku.h"
+#include "sudoku_constants.h"
 #include "sudoku_solver.h"
 
+using uint128_t = __uint128_t;
+
 int main(int argc, char* argv[]) {
+    generate_bitmasks();
+
+    uint128_t constraints[N * WIDTH] = {0};
+    generate_constraints(constraints);
+
+    uint128_t neighbors[N * N] = {0};
+    generate_neighbors(neighbors, constraints);
+
+    unsigned char index_to_symbol[N] = {0};
+    uint8_t symbol_to_index[128] = {0};
+    generate_symbols(index_to_symbol, symbol_to_index);
+
     if (argc == 1) {
         std::cout << "Please provide a sudoku puzzle as an argument" << std::endl;
         return 0;
@@ -13,20 +28,12 @@ int main(int argc, char* argv[]) {
 
     auto start_time = std::chrono::system_clock::now();
 
-    sudoku_solver solver;
-    sudoku puzzle(argv[1]);
+    sudoku puzzle(argv[1], symbol_to_index, index_to_symbol, neighbors);
     std::cout << std::endl;
     std::cout << "Puzzle:" << std::endl;
     puzzle.print_grid();
-    std::cout << std::endl;
 
-    solver.set_puzzle(puzzle);
-    if (!solver.check_puzzle()) {
-        std::cout << "Invalid puzzle" << std::endl;
-        std::cout << std::endl;
-        return 0;
-    }
-    sudoku solution = solver.get_solution();
+    sudoku solution = solve_puzzle(puzzle);
 
     std::cout << "Solution:" << std::endl;
     if (!solution.is_valid()) {
@@ -34,7 +41,6 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl;
     } else {
         solution.print_grid();
-        std::cout << std::endl;
     }
 
     auto end_time = std::chrono::system_clock::now();

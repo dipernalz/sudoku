@@ -1,115 +1,130 @@
 #include "sudoku.h"
 
-#include <iostream>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 
-#include "sudoku_solver.h"
+#include "bit_operations.h"
 
-/* private */
-sudoku::sudoku(const std::string& puzzle,
-               const possible_symbol_map& possible_symbols) {
-    exception_check(puzzle);
-    this->puzzle = puzzle;
-    this->possible_symbols = possible_symbols;
+using uint128_t = __uint128_t;
+
+sudoku::sudoku(uint128_t* const puzzle, uint16_t* const possible_symbols,
+               const uint128_t& spaces, unsigned char* const index_to_symbol,
+               uint128_t* const neighbors) {
+    for (uint8_t i = 0; i < N; i++) {
+        this->puzzle[i] = puzzle[i];
+    }
+    for (uint8_t i = 0; i < N * N; i++) {
+        this->possible_symbols[i] = possible_symbols[i];
+    }
+    this->spaces = spaces;
+    this->index_to_symbol = index_to_symbol;
+    this->neighbors = neighbors;
 }
 
-void sudoku::generate_possible_symbols() {
-    for (int i = 0; i < N * N; i++) {
+sudoku::sudoku() {
+    puzzle[0] = ~0;
+}
+
+sudoku::sudoku(const std::string puzzle, uint8_t* symbol_to_index,
+               unsigned char* index_to_symbol, uint128_t* neighbors) {
+    this->index_to_symbol = index_to_symbol;
+    this->neighbors = neighbors;
+    for (uint8_t i = 0; i < N * N; i++) {
         if (puzzle[i] == '_') {
-            possible_symbols[i];
-            for (const char& symbol : sudoku_solver::get_symbols()) {
-                bool symbolIsValid = true;
-                for (const int& pos : sudoku_solver::get_neighbors()[i]) {
-                    if (puzzle[pos] == symbol) {
-                        symbolIsValid = false;
-                        break;
-                    }
-                }
-                if (symbolIsValid) {
-                    possible_symbols[i].insert(symbol);
-                }
-            }
-        }
-    }
-}
-
-void sudoku::exception_check(const std::string& puzzle) const {
-    if (sudoku_solver::get_constraints().size() == 0 ||
-        sudoku_solver::get_neighbors().size() == 0 ||
-        sudoku_solver::get_symbols().size() == 0) {
-        throw std::logic_error("no instance of sudoku_solver has been initialized");
-    }
-    if (puzzle.size() != N * N) {
-        throw std::invalid_argument("puzzle size is invalid");
-    }
-}
-
-/* public */
-sudoku::sudoku(){};
-
-sudoku::sudoku(const std::string& puzzle) {
-    exception_check(puzzle);
-    this->puzzle = puzzle;
-    generate_possible_symbols();
-}
-
-bool sudoku::is_valid() const {
-    return puzzle.size() == N * N;
-}
-
-bool sudoku::is_solved() const {
-    return is_valid() && possible_symbols.size() == 0;
-}
-
-sudoku sudoku::replace(const int& i, const char& symbol) const {
-    std::string new_puzzle = puzzle;
-    new_puzzle[i] = symbol;
-    possible_symbol_map new_possible_symbols;
-    for (const auto& pair : possible_symbols) {
-        const int& j = pair.first;
-        if (i == j) {
+            turn_off_bit(&(this->spaces), i);
             continue;
         }
-        new_possible_symbols[j] = pair.second;
-        if (sudoku_solver::get_neighbors()[i].count(j) == 1) {
-            new_possible_symbols[j].erase(symbol);
-            if (new_possible_symbols[j].size() == 0) {
-                static const sudoku empty_puzzle;
-                return empty_puzzle;
+        uint8_t symbol_index = symbol_to_index[puzzle.at(i)];
+        turn_on_bit(&(this->puzzle[symbol_index]), i);
+    }
+    for (uint8_t i = 0; i < N * N; i++) {
+        if (puzzle[i] != '_') {
+            continue;
+        }
+        for (uint8_t j = 0; j < N; j++) {
+            if (!(neighbors[i] & this->puzzle[j])) {
+                turn_on_bit(&(possible_symbols[i]), j);
             }
         }
     }
-    return sudoku(new_puzzle, new_possible_symbols);
 }
 
-const std::string& sudoku::get_puzzle() const {
-    return puzzle;
+sudoku sudoku::replace(const uint8_t& index, const uint8_t& symbol) {
+    const static sudoku null_puzzle;
+
+    uint128_t new_puzzle[N];
+    for (uint8_t i = 0; i < N; i++) {
+        new_puzzle[i] = puzzle[i];
+    }
+    turn_on_bit(&(new_puzzle[symbol]), index);
+
+    uint16_t new_possible_symbols[N * N] = {0};
+    for (uint8_t i = 0; i < N * N; i++) {
+        if (i == index) {
+            continue;
+        }
+        if (is_bit_on(neighbors[i], index)) {
+            new_possible_symbols[i] = turn_off_bit(possible_symbols[i], symbol);
+            if (new_possible_symbols[i] == 0 && !is_bit_on(spaces, i)) {
+                return null_puzzle;
+            }
+        } else {
+            new_possible_symbols[i] = possible_symbols[i];
+        }
+    }
+
+    uint128_t new_spaces = turn_on_bit(spaces, index);
+
+    return sudoku(new_puzzle, new_possible_symbols, new_spaces, index_to_symbol,
+                  neighbors);
 }
 
-const possible_symbol_map& sudoku::get_possible_symbols() const {
+bool sudoku::is_solved() {
+    return is_valid() && ~spaces == 0;
+}
+
+bool sudoku::is_valid() {
+    return puzzle[0] != ~0;
+}
+
+uint16_t* sudoku::get_possible_symbols() {
     return possible_symbols;
 }
 
-void sudoku::print_grid() const {
-    if (!is_valid()) {
-        return;
-    }
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            std::cout << puzzle[i * N + j];
-            if (j != N - 1) {
-                std::cout << " ";
+void sudoku::print() {
+    for (uint8_t i = 0; i < N * N; i++) {
+        bool is_space = true;
+        for (uint8_t j = 0; j < N; j++) {
+            if (is_bit_on(puzzle[j], i)) {
+                std::cout << index_to_symbol[j];
+                is_space = false;
+                break;
             }
         }
-        std::cout << std::endl;
+        if (is_space) {
+            std::cout << '_';
+        }
     }
+    std::cout << std::endl;
 }
 
-void sudoku::print_line() const {
-    if (!is_valid()) {
-        return;
+void sudoku::print_grid() {
+    for (uint8_t i = 0; i < N * N; i++) {
+        bool is_space = true;
+        for (uint8_t j = 0; j < N; j++) {
+            if (is_bit_on(puzzle[j], i)) {
+                std::cout << index_to_symbol[j];
+                is_space = false;
+                break;
+            }
+        }
+        if (is_space) {
+            std::cout << '_';
+        }
+        if (i % N == N - 1) {
+            std::cout << std::endl;
+        } else {
+            std::cout << ' ';
+        }
     }
-    std::cout << puzzle << std::endl;
+    std::cout << std::endl;
 }
