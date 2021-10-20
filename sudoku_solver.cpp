@@ -58,7 +58,7 @@ sudoku solve_puzzle(sudoku puzzle) {
     const static sudoku null_puzzle;
 
     if (!puzzle.is_valid()) {
-        return puzzle;
+        return null_puzzle;
     }
     if (puzzle.is_solved()) {
         return puzzle;
@@ -74,9 +74,9 @@ sudoku solve_puzzle(sudoku puzzle) {
         if (possible_n < min_possible_n) {
             min_possible_n = possible_n;
             min_possible_i = i;
-        }
-        if (min_possible_n == 1) {
-            break;
+            if (min_possible_n == 1) {
+                break;
+            }
         }
     }
 
@@ -90,4 +90,27 @@ sudoku solve_puzzle(sudoku puzzle) {
     }
 
     return null_puzzle;
+}
+
+bool check_puzzle(sudoku puzzle, uint128_t* constraints) {
+    if (!puzzle.is_valid()) {
+        return false;
+    }
+    for (uint8_t i = 0; i < N * WIDTH; i++) {
+        uint16_t constraint_symbols = 0;
+        for (uint8_t j = 0; j < N * N; j++) {
+            if (!is_bit_on(constraints[i], j)) {
+                continue;
+            }
+            for (uint8_t k = 0; k < N; k++) {
+                if (is_bit_on(puzzle.get_puzzle()[k], j)) {
+                    if (is_bit_on(constraint_symbols, k)) {
+                        return false;
+                    }
+                    turn_on_bit(&constraint_symbols, k);
+                }
+            }
+        }
+    }
+    return true;
 }

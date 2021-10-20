@@ -11,9 +11,9 @@ class sudoku {
    private:
     uint128_t puzzle[N] = {0};
     uint16_t possible_symbols[N * N] = {0};
+    uint128_t spaces = ~0;
     unsigned char* index_to_symbol = NULL;
     uint128_t* neighbors = NULL;
-    uint128_t spaces = ~0;
 
     sudoku(uint128_t* const puzzle, uint16_t* const possible_symbols,
            const uint128_t& spaces, unsigned char* const index_to_symbol,
@@ -22,14 +22,16 @@ class sudoku {
    public:
     sudoku();
 
-    sudoku(const std::string puzzle, uint8_t* symbol_to_index,
-           unsigned char* index_to_symbol, uint128_t* neighbors);
+    sudoku(const std::string puzzle, unsigned char* const index_to_symbol,
+           uint128_t* const neighbors, uint8_t* const symbol_to_index);
 
     sudoku replace(const uint8_t& index, const uint8_t& symbol);
 
     bool is_solved();
 
     bool is_valid();
+
+    uint128_t* get_puzzle();
 
     uint16_t* get_possible_symbols();
 

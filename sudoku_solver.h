@@ -14,6 +14,6 @@ void generate_symbols(unsigned char* index_to_symbol, uint8_t* symbol_to_index);
 
 sudoku solve_puzzle(sudoku puzzle);
 
-bool check_puzzle();
+bool check_puzzle(sudoku puzzle, uint128_t* constraints);
 
 #endif

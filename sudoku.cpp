@@ -24,8 +24,12 @@ sudoku::sudoku() {
     puzzle[0] = ~0;
 }
 
-sudoku::sudoku(const std::string puzzle, uint8_t* symbol_to_index,
-               unsigned char* index_to_symbol, uint128_t* neighbors) {
+sudoku::sudoku(const std::string puzzle, unsigned char* const index_to_symbol,
+               uint128_t* const neighbors, uint8_t* const symbol_to_index) {
+    if (puzzle.size() != N * N) {
+        throw std::invalid_argument("puzzle size is invalid");
+    }
+
     this->index_to_symbol = index_to_symbol;
     this->neighbors = neighbors;
     for (uint8_t i = 0; i < N * N; i++) {
@@ -86,11 +90,19 @@ bool sudoku::is_valid() {
     return puzzle[0] != ~0;
 }
 
+uint128_t* sudoku::get_puzzle() {
+    return puzzle;
+}
+
 uint16_t* sudoku::get_possible_symbols() {
     return possible_symbols;
 }
 
 void sudoku::print() {
+    if (!is_valid()) {
+        std::cout << "null puzzle" << std::endl;
+        return;
+    }
     for (uint8_t i = 0; i < N * N; i++) {
         bool is_space = true;
         for (uint8_t j = 0; j < N; j++) {
@@ -108,6 +120,10 @@ void sudoku::print() {
 }
 
 void sudoku::print_grid() {
+    if (!is_valid()) {
+        std::cout << "null puzzle" << std::endl;
+        return;
+    }
     for (uint8_t i = 0; i < N * N; i++) {
         bool is_space = true;
         for (uint8_t j = 0; j < N; j++) {

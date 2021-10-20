@@ -28,11 +28,16 @@ int main(int argc, char* argv[]) {
 
     auto start_time = std::chrono::system_clock::now();
 
-    sudoku puzzle(argv[1], symbol_to_index, index_to_symbol, neighbors);
+    sudoku puzzle(argv[1], index_to_symbol, neighbors, symbol_to_index);
     std::cout << std::endl;
     std::cout << "Puzzle:" << std::endl;
     puzzle.print_grid();
 
+    if (!check_puzzle(puzzle, constraints)) {
+        std::cout << "Invalid puzzle" << std::endl;
+        std::cout << std::endl;
+        return 0;
+    }
     sudoku solution = solve_puzzle(puzzle);
 
     std::cout << "Solution:" << std::endl;
