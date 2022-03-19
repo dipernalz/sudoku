@@ -1,8 +1,8 @@
 #ifndef SUDOKU_SOLVER_H
 #define SUDOKU_SOLVER_H
 
-#include "bit_operations.h"
-#include "sudoku.h"
+#include "bit_operations.hpp"
+#include "sudoku.hpp"
 
 using uint128_t = __uint128_t;
 

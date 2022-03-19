@@ -2,9 +2,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "sudoku.h"
-#include "sudoku_constants.h"
-#include "sudoku_solver.h"
+#include "sudoku.hpp"
+#include "sudoku_constants.hpp"
+#include "sudoku_solver.hpp"
 
 using uint128_t = __uint128_t;
 

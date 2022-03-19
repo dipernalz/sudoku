@@ -1,8 +1,8 @@
-#include "bit_operations.h"
+#include "bit_operations.hpp"
 
 #include <iostream>
 
-#include "sudoku_constants.h"
+#include "sudoku_constants.hpp"
 
 static uint128_t on_bitmasks[N * N] = {0};
 static uint128_t off_bitmasks[N * N] = {0};

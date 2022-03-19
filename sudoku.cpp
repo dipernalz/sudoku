@@ -1,8 +1,8 @@
-#include "sudoku.h"
+#include "sudoku.hpp"
 
 #include <string>
 
-#include "bit_operations.h"
+#include "bit_operations.hpp"
 
 using uint128_t = __uint128_t;
 

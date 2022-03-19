@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "sudoku_constants.h"
+#include "sudoku_constants.hpp"
 
 using uint128_t = __uint128_t;
 
